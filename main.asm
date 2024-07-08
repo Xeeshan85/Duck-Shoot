@@ -7654,7 +7654,7 @@ MENU_SCREEN PROC
         mov al, THE_SCORE_OF_THE_PLAYER
         add al ,30h         ; Convert into ASCII
         mov [scoreMsg + 7 ], al
-        
+
         call LEVEL1
         call LEVEL2
         call GAME_VICTORIOUS
@@ -7800,8 +7800,8 @@ PLAY_SCREEN PROC
 
         mov yi, 170   
         mov yf, 202     ;Rows
-        mov xi, 133
-        mov xf, 166     ;columns
+        mov xi, 233
+        mov xf, 266     ;columns
         mov di, REMAINING_DUCKS
         DuckLoop:
             cmp di, 0
@@ -7811,12 +7811,12 @@ PLAY_SCREEN PROC
             call DRAW_DU
 
             mov ax, xi
-            add ax, 32
+            add ax, 33
             mov xi, ax
             inc xi
             inc xi
 
-            add ax, 32
+            add ax, 33
             mov xf, ax
             inc xf
             inc xf
@@ -7870,7 +7870,7 @@ PLAY_SCREEN2 PROC
             mov ch, 22     ;top row of window ; increase to 10 to make square
             mov cl, 1     ;left most column of window
             mov dh, 23    ;Bottom row of window
-            mov dl, 7     ;Right most column of window
+            mov dl, 10     ;Right most column of window
             int 10h
 
 
@@ -8008,25 +8008,25 @@ PLAY_SCREEN2 PROC
         mov xf, 25 ; cols
         call draw
 
-        mov yi, 178
-        mov yf, 188 ; rows
-        mov xi, 230
-        mov xf, 236 ; cols
+        mov yi, 170   
+        mov yf, 202     ;Rows
+        mov xi, 233
+        mov xf, 266     ;columns
         mov di, REMAINING_DUCKS
         DuckLoop:
             cmp di, 0
             je exitDuckLoop
 
-            lea si, Bullet
+            lea si, duck_rightup_1
             call DRAW_DU
 
             mov ax, xi
-            add ax, 6
+            add ax, 33
             mov xi, ax
             inc xi
             inc xi
 
-            add ax, 6
+            add ax, 33
             mov xf, ax
             inc xf
             inc xf
