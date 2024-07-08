@@ -37,10 +37,15 @@ cv filename.exe
 ### SHORTCUTS
 
 Full Screen: ``` Alt+ Enter ```
+
 Exit Screen: ``` Alt+F4 ```
+
 Step by Step Run: ``` F10 ```
+
 Run at once: ``` F5 ```
+
 Register window: ``` Alt+7 ```
+
 Memory 1 window: ``` Alt+5 ```
 
 
