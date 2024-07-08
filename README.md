@@ -49,7 +49,7 @@ Register window: ``` Alt+7 ```
 Memory 1 window: ``` Alt+5 ```
 
 
-**PREVIEW GAMEPLAY**
+## **GAMEPLAY PREVIEW**
 
 
 https://github.com/Xeeshan85/duckShoot/assets/106513298/e68d80e5-ecec-4485-9932-e34b973c2feb
