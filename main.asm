@@ -6582,6 +6582,8 @@ CHECK_WHICH_DUCK_IS_MOVING dw 00h ;initially set to 0, later on in move duck dia
     isAlive dw 1
     duckNumber dw 0
     duckNumber2 dw 0
+    isClearedLevel1 dw 0
+    isClearedLevel2 dw 0
 
 
 ;-----------MODES VARIABLES======================
@@ -6612,7 +6614,6 @@ MAIN PROC
 ; \\\\==========-==-=-=-== END NAME SCREEN =====================================
 ;						<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>
 ; \\\\==========-==-=-=-== START MENU SCREEN =====================================
-
 	call MENU_SCREEN
     
     
@@ -6639,8 +6640,8 @@ LEVEL1 PROC
         mov isDUCK_DIED, 0
         mov REMAINING_DUCKS, 1
         mov DUCK_COUNT, 1
-        mov REMAINING_BULLETS, 15
-        mov BULLET_COUNT, 15
+        mov REMAINING_BULLETS, 6
+        mov BULLET_COUNT, 6
         call VIDEOMODE
         call PLAY_SCREEN
 
@@ -6654,8 +6655,8 @@ LEVEL1 PROC
         mov isDUCK_DIED, 0
         mov REMAINING_DUCKS, 1
         mov DUCK_COUNT, 1
-        mov REMAINING_BULLETS, 15
-        mov BULLET_COUNT, 15
+        mov REMAINING_BULLETS, 6
+        mov BULLET_COUNT, 6
         call VIDEOMODE
         call PLAY_SCREEN
 
@@ -6669,8 +6670,8 @@ LEVEL1 PROC
         mov isDUCK_DIED, 0
         mov REMAINING_DUCKS, 1
         mov DUCK_COUNT, 1
-        mov REMAINING_BULLETS, 15
-        mov BULLET_COUNT, 15
+        mov REMAINING_BULLETS, 6
+        mov BULLET_COUNT, 6
         call VIDEOMODE
         call PLAY_SCREEN
 
@@ -7041,11 +7042,11 @@ MOVE_CROSSHAIR proc
                 
 
 		inc THE_SCORE_OF_THE_PLAYER
-			mov al, THE_SCORE_OF_THE_PLAYER ;Given for example that Player One has 2 Points => Al = 2
-			;convert the value stored in al into its ASCII value
-			add al ,30h
-			;Now we move to the effective address of TEXT_TO_DISPLAY_NUMBER_OF_BULLETS_LEFTthe ASCII value of the decimal number we had in al register:
-			mov [scoreMsg + 7 ], al
+        mov al, THE_SCORE_OF_THE_PLAYER ;Given for example that Player One has 2 Points => Al = 2
+        ;convert the value stored in al into its ASCII value
+        add al ,30h
+        ;Now we move to the effective address of TEXT_TO_DISPLAY_NUMBER_OF_BULLETS_LEFTthe ASCII value of the decimal number we had in al register:
+        mov [scoreMsg + 7 ], al
 
 				
 
@@ -7298,7 +7299,10 @@ PAUSE_PROC PROC
     jmp PauseProcExit
 
     h_pressed:
-        ;##################################################################################################### ME ########
+        mov THE_SCORE_OF_THE_PLAYER, 0
+        mov al, THE_SCORE_OF_THE_PLAYER
+        add al ,30h         ; Convert into ASCII
+        mov [scoreMsg + 7 ], al
         call MENU_SCREEN
         
     e_pressed:
@@ -7485,6 +7489,8 @@ clearscope proc
 clearscope endp
 
 MENU_SCREEN PROC
+    Restart_Menu:
+
     call DELAY
 	call VIDEOMODE
 
@@ -7638,17 +7644,21 @@ MENU_SCREEN PROC
 
     ScoresClicked:
         call SCORES_SCREEN
-        jmp exit
+        jmp Restart_Menu
 
     InfoClicked:
         call INFO_SCREEN
-        jmp exit
+        jmp Restart_Menu
 
     PlayClicked:
+        mov al, THE_SCORE_OF_THE_PLAYER
+        add al ,30h         ; Convert into ASCII
+        mov [scoreMsg + 7 ], al
+        
         call LEVEL1
         call LEVEL2
         call GAME_VICTORIOUS
-        jmp exit      ; Continue main loop
+        jmp Restart_Menu
 
 
 
@@ -7694,7 +7704,7 @@ PLAY_SCREEN PROC
             mov al, 0
             mov bh, 0000b     ;color
             mov ch, 22     ;top row of window ; increase to 10 to make square
-            mov cl, 1q     ;left most column of window
+            mov cl, 1     ;left most column of window
             mov dh, 23    ;Bottom row of window
             mov dl, 7     ;Right most column of window
             int 10h
@@ -7703,8 +7713,8 @@ PLAY_SCREEN PROC
             ; Bullets ===========================
             mov yi, 178
             mov yf, 188 ; rows
-            mov xi, 20
-            mov xf, 26 ; cols
+            mov xi, 13
+            mov xf, 19 ; cols
             mov di, REMAINING_BULLETS
             BulletLoop:
                 cmp di, 0
@@ -7858,7 +7868,7 @@ PLAY_SCREEN2 PROC
             mov al, 0
             mov bh, 0000b     ;color
             mov ch, 22     ;top row of window ; increase to 10 to make square
-            mov cl, 1q     ;left most column of window
+            mov cl, 1     ;left most column of window
             mov dh, 23    ;Bottom row of window
             mov dl, 7     ;Right most column of window
             int 10h
@@ -7867,8 +7877,8 @@ PLAY_SCREEN2 PROC
             ; Bullets ===========================
             mov yi, 178
             mov yf, 188 ; rows
-            mov xi, 20
-            mov xf, 26 ; cols
+            mov xi, 13
+            mov xf, 19 ; cols
             mov di, REMAINING_BULLETS
             BulletLoop:
                 cmp di, 0
@@ -8086,7 +8096,6 @@ DRAW_BACKGROUND proc
 DRAW_BACKGROUND endp
 
 SCORES_SCREEN PROC
-
     CALL VIDEOMODE
     CALL Delay
 
@@ -8129,8 +8138,30 @@ SCORES_SCREEN PROC
         call PrintString           ; Call function
 
     
+    ;setting cursor position
+	mov ah, 2
+	mov dh, 45    ;row
+	mov dl, 5    ;column
+	int 10h
 
-    jmp DISPLAYEXIT
+        ; Printing the String 
+        mov bx, 0            		; Screen Page
+        mov bl, 1011B        		; Text Color
+        lea si, pauseScreenMsg3     		; Text Offset
+        mov cx, lengthof pauseScreenMsg3  ; Load the length of the string into CX
+        call PrintString           ; Call function
+    
+    
+    get_input:          ; If h pressed go to home
+        mov ah, 0
+        int 16h
+
+        cmp al, 068h
+        je funcExit
+
+        jmp get_input
+
+    jmp funcExit
 
     file_error:
         ; =========ERROR MSG
@@ -8139,12 +8170,11 @@ SCORES_SCREEN PROC
     read_error:
         ; =========ERROR MSG
         jmp DISPLAYEXIT
-    DISPLAYEXIT:
-        mov ah, 0
-        int 16h 
 
+    DISPLAYEXIT:
         mov ah, 4Ch
         int 21h
+    funcExit:
     RET
 SCORES_SCREEN ENDP
 
@@ -8242,7 +8272,6 @@ SPLASH_SCREEN PROC
 SPLASH_SCREEN ENDP
 
 INFO_SCREEN PROC
-
     call DELAY
     call VIDEOMODE
 
@@ -8338,6 +8367,35 @@ INFO_SCREEN PROC
     lea si, pauseMsg     		; Text Offset
     mov cx, lengthof pauseMsg  ; Load the length of the string into CX
     call PrintString 
+
+
+    ;setting cursor position
+	mov ah, 2
+	mov dh, 45    ;row
+	mov dl, 4    ;column
+	int 10h
+
+        ; Printing the String 
+        mov bx, 0            		; Screen Page
+        mov bl, 1011B        		; Text Color
+        lea si, pauseScreenMsg3     		; Text Offset
+        mov cx, lengthof pauseScreenMsg3  ; Load the length of the string into CX
+        call PrintString           ; Call function
+    
+    
+    get_input:          ; If h pressed go to home
+        mov ah, 0
+        int 16h
+
+        cmp al, 068h
+        je funcExit
+
+        jmp get_input
+
+    jmp funcExit
+
+    funcExit:
+
     RET
 INFO_SCREEN ENDP
 
@@ -8448,24 +8506,36 @@ GAME_OVER PROC
     mov bx, Filehandler
     int 21h
 
-    call DELAY
-    call DELAY
-    call DELAY
-    call DELAY
-    call DELAY
-    call DELAY
-    call DELAY
-    call DELAY
-    call DELAY
-    call DELAY
-    call DELAY
-    call DELAY
-    call DELAY
-    call DELAY
-    
 
-    mov ah, 4ch
-    int 21h
+
+    ;setting cursor position
+	mov ah, 2
+	mov dh, 45    ;row
+	mov dl, 5    ;column
+	int 10h
+
+        ; Printing the String 
+        mov bx, 0            		; Screen Page
+        mov bl, 1011B        		; Text Color
+        lea si, pauseScreenMsg3     		; Text Offset
+        mov cx, lengthof pauseScreenMsg3  ; Load the length of the string into CX
+        call PrintString           ; Call function
+    
+    
+    get_input:          ; If h pressed go to home
+        mov ah, 0
+        int 16h
+
+        cmp al, 068h
+        je funcExit
+
+        jmp get_input
+
+    jmp funcExit
+
+    funcExit:
+        mov THE_SCORE_OF_THE_PLAYER, 0
+        call MENU_SCREEN
 GAME_OVER ENDP
 
 GAME_VICTORIOUS PROC
@@ -8559,6 +8629,33 @@ GAME_VICTORIOUS PROC
     mov bx, Filehandler
     int 21h
 
+
+    ;setting cursor position
+	mov ah, 2
+	mov dh, 45    ;row
+	mov dl, 5    ;column
+	int 10h
+
+        ; Printing the String 
+        mov bx, 0            		; Screen Page
+        mov bl, 1011B        		; Text Color
+        lea si, pauseScreenMsg3     		; Text Offset
+        mov cx, lengthof pauseScreenMsg3  ; Load the length of the string into CX
+        call PrintString           ; Call function
+    
+    
+    get_input:          ; If h pressed go to home
+        mov ah, 0
+        int 16h
+
+        cmp al, 068h
+        je funcExit
+
+        jmp get_input
+
+    jmp funcExit
+
+    funcExit:
         ret
 GAME_VICTORIOUS ENDP
 
